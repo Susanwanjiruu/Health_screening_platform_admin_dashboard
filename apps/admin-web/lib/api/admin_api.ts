@@ -83,6 +83,55 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
   });
 }
 
+export async function createFacility(payload: {
+  name: string;
+  contact_info?: string | null;
+  cycle_year: number;
+}): Promise<Facility & { unique_code: string }> {
+  return apiRequest<Facility & { unique_code: string }>("/facility", {
+    method: "POST",
+    token: requireAdminToken(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getFacilityStaff(
+  facilityId: number,
+): Promise<AdminUser[]> {
+  return apiRequest<AdminUser[]>(`/facility/${facilityId}/staff`, {
+    method: "GET",
+    token: requireAdminToken(),
+  });
+}
+
+export async function updateFacilityStatus(
+  facilityId: number,
+  status: string,
+): Promise<Facility> {
+  return apiRequest<Facility>(`/facility/${facilityId}/status`, {
+    method: "PUT",
+    token: requireAdminToken(),
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function regenerateFacilityCode(
+  facilityId: number,
+  cycleYear: number,
+): Promise<{
+  facility_id: number;
+  unique_code: string;
+  unique_code_cycle_year: number;
+}> {
+  return apiRequest(
+    `/facility/${facilityId}/regenerate-code?cycle_year=${cycleYear}`,
+    {
+      method: "POST",
+      token: requireAdminToken(),
+    },
+  );
+}
+
 export async function createProvider(payload: {
   name: string;
   email: string;
@@ -93,6 +142,23 @@ export async function createProvider(payload: {
 }): Promise<AdminUser> {
   return apiRequest<AdminUser>("/user", {
     method: "POST",
+    token: requireAdminToken(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProvider(
+  userId: number,
+  payload: {
+    name: string;
+    email: string;
+    telephone?: string | null;
+    designation?: string | null;
+    facility_id: number;
+  },
+): Promise<AdminUser> {
+  return apiRequest<AdminUser>(`/user/${userId}`, {
+    method: "PUT",
     token: requireAdminToken(),
     body: JSON.stringify(payload),
   });

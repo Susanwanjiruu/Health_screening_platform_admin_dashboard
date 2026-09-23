@@ -154,6 +154,8 @@ export default function Home() {
                       ? router.push("/settings")
                       : item.label === "Providers"
                         ? router.push("/providers")
+                        : item.label === "Facilities"
+                          ? router.push("/facilities")
                         : undefined
                 }
                 className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition ${

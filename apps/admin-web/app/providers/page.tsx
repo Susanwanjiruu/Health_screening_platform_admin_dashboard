@@ -1,7 +1,7 @@
 "use client";
 
 import AdminAuthGuard from "@/components/admin_auth_guard";
-import { AdminUser, Facility, createProvider, getAdminUsers, getFacilities, setProviderLeader, toggleProviderStatus } from "@/lib/api/admin_api";
+import { AdminUser, Facility, createProvider, getAdminUsers, getFacilities, setProviderLeader, toggleProviderStatus, updateProvider } from "@/lib/api/admin_api";
 import { AlertCircle, ArrowLeft, Ban, Building2, MoreHorizontal, Plus, ShieldCheck, Stethoscope, UserCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,19 @@ export default function ProvidersPage() {
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<AdminUser | null>(null);
+  const [showProviderDetails, setShowProviderDetails] = useState(false);
+  const [showEditProvider, setShowEditProvider] = useState(false);
+  const [editingProvider, setEditingProvider] = useState<AdminUser | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    telephone: "",
+    designation: "",
+    facility_id: "",
+  });
+  const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -594,14 +607,54 @@ export default function ProvidersPage() {
                               )}
                             </button>
 
-                            <button
-                              type="button"
-                              disabled
-                              title="More provider actions"
-                              className="rounded-lg border border-[#e0e4e8] p-2 text-[#5c6672] opacity-50"
-                            >
-                              <MoreHorizontal size={17} />
-                            </button>
+                            <div className="relative">
+                              <button
+                                type="button"
+                                title="More provider actions"
+                                onClick={() =>
+                                  setOpenMenuId((current) =>
+                                    current === provider.user_id ? null : provider.user_id,
+                                  )
+                                }
+                                className="rounded-lg border border-[#e0e4e8] p-2 text-[#5c6672] transition hover:bg-[#f5f7fa]"
+                              >
+                                <MoreHorizontal size={17} />
+                              </button>
+
+                              {openMenuId === provider.user_id && (
+                                <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-[#e0e4e8] bg-white p-1.5 shadow-lg">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedProvider(provider);
+                                      setShowProviderDetails(true);
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="w-full rounded-lg px-3 py-2 text-left text-sm text-[#1a1a1a] hover:bg-[#f5f7fa]"
+                                  >
+                                    View Provider Details
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingProvider(provider);
+                                      setEditForm({
+                                        name: provider.name,
+                                        email: provider.email,
+                                        telephone: provider.telephone ?? "",
+                                        designation: provider.designation ?? "",
+                                        facility_id: provider.facility_id?.toString() ?? "",
+                                      });
+                                      setShowEditProvider(true);
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="w-full rounded-lg px-3 py-2 text-left text-sm text-[#1a1a1a] hover:bg-[#f5f7fa]"
+                                  >
+                                    Edit Provider
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -612,6 +665,260 @@ export default function ProvidersPage() {
             </div>
           </section>
         </div>
+
+        {showEditProvider && editingProvider && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-[#e0e4e8] px-6 py-5">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#0b1f3f]">
+                    Edit Provider
+                  </h2>
+                  <p className="mt-1 text-sm text-[#5c6672]">
+                    Update provider account information.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditProvider(false);
+                    setEditingProvider(null);
+                  }}
+                  className="rounded-lg p-2 text-[#5c6672] hover:bg-[#f5f7fa]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  if (!editingProvider) return;
+
+                  setEditing(true);
+                  setActionError(null);
+
+                  try {
+                    const updated = await updateProvider(editingProvider.user_id, {
+                      name: editForm.name,
+                      email: editForm.email,
+                      telephone: editForm.telephone || null,
+                      designation: editForm.designation || null,
+                      facility_id: Number(editForm.facility_id),
+                    });
+
+                    setUsers((current) =>
+                      current.map((provider) =>
+                        provider.user_id === updated.user_id ? updated : provider,
+                      ),
+                    );
+                    setShowEditProvider(false);
+                    setEditingProvider(null);
+                  } catch (error) {
+                    setActionError(
+                      error instanceof Error
+                        ? error.message
+                        : "Unable to update provider.",
+                    );
+                  } finally {
+                    setEditing(false);
+                  }
+                }}
+                className="space-y-5 px-6 py-6"
+              >
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-medium text-[#1a1a1a]">Full Name</span>
+                    <input
+                      required
+                      value={editForm.name}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          name: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#e0e4e8] px-3 py-2.5 text-sm outline-none focus:border-[#0054a6]"
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-medium text-[#1a1a1a]">Email</span>
+                    <input
+                      required
+                      type="email"
+                      value={editForm.email}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          email: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#e0e4e8] px-3 py-2.5 text-sm outline-none focus:border-[#0054a6]"
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-medium text-[#1a1a1a]">Telephone</span>
+                    <input
+                      value={editForm.telephone}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          telephone: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#e0e4e8] px-3 py-2.5 text-sm outline-none focus:border-[#0054a6]"
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <span className="text-sm font-medium text-[#1a1a1a]">Designation</span>
+                    <input
+                      value={editForm.designation}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          designation: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#e0e4e8] px-3 py-2.5 text-sm outline-none focus:border-[#0054a6]"
+                    />
+                  </label>
+
+                  <label className="space-y-1.5 sm:col-span-2">
+                    <span className="text-sm font-medium text-[#1a1a1a]">Facility</span>
+                    <select
+                      required
+                      value={editForm.facility_id}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          facility_id: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#e0e4e8] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#0054a6]"
+                    >
+                      <option value="">Select facility</option>
+                      {facilities
+                        .filter((facility) => facility.status === "Active")
+                        .map((facility) => (
+                          <option
+                            key={facility.facility_id}
+                            value={facility.facility_id}
+                          >
+                            {facility.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 border-t border-[#e0e4e8] pt-5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditProvider(false);
+                      setEditingProvider(null);
+                    }}
+                    className="rounded-lg border border-[#e0e4e8] px-4 py-2 text-sm font-medium text-[#5c6672] hover:bg-[#f5f7fa]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editing}
+                    className="rounded-lg bg-[#0054a6] px-4 py-2 text-sm font-medium text-white hover:bg-[#00498f] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {editing ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showProviderDetails && selectedProvider && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-[#e0e4e8] px-6 py-5">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#0b1f3f]">
+                    Provider Details
+                  </h2>
+                  <p className="mt-1 text-sm text-[#5c6672]">
+                    Provider account information
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProviderDetails(false);
+                    setSelectedProvider(null);
+                  }}
+                  className="rounded-lg p-2 text-[#5c6672] hover:bg-[#f5f7fa]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Name</p>
+                  <p className="mt-1 text-sm font-medium text-[#1a1a1a]">{selectedProvider.name}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Email</p>
+                  <p className="mt-1 break-words text-sm text-[#1a1a1a]">{selectedProvider.email}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Telephone</p>
+                  <p className="mt-1 text-sm text-[#1a1a1a]">{selectedProvider.telephone || "Not provided"}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Designation</p>
+                  <p className="mt-1 text-sm text-[#1a1a1a]">{selectedProvider.designation || "Not provided"}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Facility</p>
+                  <p className="mt-1 text-sm text-[#1a1a1a]">
+                    {facilityNames.get(selectedProvider.facility_id ?? 0) || "Not assigned"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Status</p>
+                  <p className="mt-1 text-sm font-medium text-[#1a1a1a]">{selectedProvider.status}</p>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#5c6672]">Leadership</p>
+                  <p className="mt-1 text-sm font-medium text-[#1a1a1a]">
+                    {selectedProvider.is_hospital_leader ? "Lead Provider" : "Provider"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end border-t border-[#e0e4e8] px-6 py-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProviderDetails(false);
+                    setSelectedProvider(null);
+                  }}
+                  className="rounded-lg bg-[#0054a6] px-4 py-2 text-sm font-medium text-white hover:bg-[#00498f]"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </AdminAuthGuard>
   );
