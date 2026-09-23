@@ -1,41 +1,31 @@
 # Compassion
 
-TODO: One or two sentences on what Compassion is and who it's for.
+A health screening platform for children and beneficiaries in Compassion programs. Doctors and providers record screenings (malnutrition, immunization, vitamin A, deworming, HIV testing and more) from a mobile app, and administrators monitor providers and reports from a web dashboard.
 
-## Repository structure
+## Components
 
-```
-compassion/
-└── apps/
-    └── admin-web/     # Admin dashboard (Next.js)
-```
+| Component | Description | Stack |
+| --- | --- | --- |
+| `apps/admin-web` | Admin dashboard (this repo) | Next.js 16, React, TypeScript, Tailwind CSS |
+| Provider mobile app | Doctor login and screening forms (separate project) | Flutter |
+| Backend API | Auth, screening and reporting under `/api/v1` | TODO: framework |
 
 ## Admin Web
 
-A web dashboard for administrators to manage providers, view reports, and configure settings.
-
 ### Features
 
-- Admin authentication (login, email verification, first-login setup)
+- Admin authentication: login, OTP verification, first-login password setup
 - Providers management
-- Reports, with an AI chat assistant for asking questions about reports
+- Reports on screening data, with an AI chat assistant
 - Settings
-
-### Tech stack
-
-- [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
-- React and TypeScript
-- Tailwind CSS (PostCSS)
-- ESLint
 
 ### Getting started
 
-**Prerequisites:** Node.js 20 or newer and npm.
+Prerequisites: Node.js 20+ and npm, and a running backend.
 
 ```bash
 cd apps/admin-web
 npm install
-cp .env.example .env.local   # then fill in the values
 npm run dev
 ```
 
@@ -43,14 +33,12 @@ The app runs at http://localhost:3000.
 
 ### Environment variables
 
-Create `apps/admin-web/.env.local`:
+Create `apps/admin-web/.env.local` (never commit it):
 
 ```
-# TODO: list each variable name with a description, for example:
-# NEXT_PUBLIC_API_URL=   # Base URL of the backend API
+# TODO: list variable names, e.g.
+# NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
 ```
-
-Never commit `.env.local`. It's already in `.gitignore`.
 
 ### Scripts
 
@@ -61,40 +49,40 @@ Never commit `.env.local`. It's already in `.gitignore`.
 | `npm run start` | Run the production build |
 | `npm run lint` | Lint the code |
 
-### Project layout
-
-```
-apps/admin-web/
-├── app/           # Pages and routes (login, providers, reports, settings)
-├── components/    # Shared UI (auth guard, chatbot)
-├── lib/
-│   ├── api/       # Backend API clients
-│   └── auth/      # Session and authentication helpers
-└── public/        # Static assets
-```
-
 ### Routes
 
 | Path | Purpose |
 | --- | --- |
 | `/` | Dashboard |
 | `/login` | Sign in |
-| `/login/verify` | Verification step |
-| `/login/first-login` | First-time account setup |
+| `/login/verify` | OTP verification |
+| `/login/first-login` | First-time password setup |
 | `/providers` | Providers |
 | `/reports` | Reports and chat assistant |
 | `/settings` | Settings |
 
+### Project layout
+
+```
+apps/admin-web/
+├── app/          # Pages and routes
+├── components/   # Shared UI (auth guard, chatbot)
+├── lib/
+│   ├── api/      # Backend API clients
+│   └── auth/     # Session helpers
+└── public/       # Static assets
+```
+
 ## Backend
 
-TODO: Where the API lives, how to run it, and how admin-web connects to it.
+The API is served under `/api/v1`. Auth flow: `login-request` -> `login-verify-otp` -> `complete-first-login`.
 
-## Contributing
+TODO: backend repo link and how to run it.
 
-1. Create a branch: `git checkout -b feature/your-change`
-2. Make your changes and run `npm run build` to check nothing breaks
-3. Commit and open a pull request
+## Security note
+
+This project handles sensitive health data. Never commit `.env` files, keys or real patient data.
 
 ## License
 
-TODO: Add a license, or state that the project is private.
+TODO: add a license, or state that the project is private.
