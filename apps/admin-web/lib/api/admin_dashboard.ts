@@ -3,27 +3,31 @@ import {
   getBeneficiaries,
   getFacilities,
   getFiscalReport,
+  getScreenings,
   type AdminUser,
   type Beneficiary,
   type Facility,
   type FiscalReport,
+  type Screening,
 } from "@/lib/api/admin_api";
 
 export type DashboardData = {
   facilities: Facility[];
   providers: AdminUser[];
   beneficiaries: Beneficiary[];
+  screenings: Screening[];
   fiscalReport: FiscalReport;
 };
 
 export async function getDashboardData(
   fiscalYear: string,
 ): Promise<DashboardData> {
-  const [facilities, users, beneficiaries, fiscalReport] =
+  const [facilities, users, beneficiaries, screenings, fiscalReport] =
     await Promise.all([
       getFacilities(),
       getAdminUsers(),
       getBeneficiaries(),
+      getScreenings(),
       getFiscalReport(fiscalYear),
     ]);
 
@@ -31,6 +35,7 @@ export async function getDashboardData(
     facilities,
     providers: users.filter((user) => user.role === "Provider"),
     beneficiaries,
+    screenings,
     fiscalReport,
   };
 }

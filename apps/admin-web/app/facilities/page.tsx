@@ -1,6 +1,7 @@
 "use client";
 
 import AdminAuthGuard from "@/components/admin_auth_guard";
+import AdminSidebar from "@/components/admin_sidebar";
 import {
   Building2,
   CheckCircle2,
@@ -147,17 +148,12 @@ export default function FacilitiesPage() {
 
   return (
     <AdminAuthGuard>
+      <AdminSidebar />
+      <div className="lg:pl-64">
       <main className="min-h-screen bg-[#f5f7fa]">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <button
-                type="button"
-                onClick={() => window.history.back()}
-                className="mb-3 flex items-center gap-2 text-sm text-[#5c6672] hover:text-[#0054a6]"
-              >
-                <span>Back</span>
-              </button>
               <h1 className="text-2xl font-semibold text-[#0b1f3f]">Facilities</h1>
               <p className="mt-1 text-sm text-[#5c6672]">
                 Manage healthcare facilities and their provider teams.
@@ -531,6 +527,7 @@ export default function FacilitiesPage() {
           </div>
         )}
       </main>
+      </div>
     </AdminAuthGuard>
   );
 }

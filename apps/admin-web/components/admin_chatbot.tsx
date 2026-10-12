@@ -1,5 +1,7 @@
 "use client";
 
+import { getFiscalYear } from "@/lib/utils/fiscal_year";
+
 import { useState } from "react";
 import { Bot, Send, X } from "lucide-react";
 import {
@@ -33,7 +35,7 @@ export default function AdminChatbot() {
     setLoading(true);
 
     try {
-      const response = await askReportQuestion(trimmed, "2026");
+      const response = await askReportQuestion(trimmed, getFiscalYear());
 
       setMessages((current) => [
         ...current,

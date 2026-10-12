@@ -1,22 +1,12 @@
 "use client";
 
+import { getFiscalYear } from "@/lib/utils/fiscal_year";
+
 import AdminAuthGuard from "@/components/admin_auth_guard";
 import AdminChatbot from "@/components/admin_chatbot";
+import AdminSidebar from "@/components/admin_sidebar";
 
-import {
-  Bell,
-  Building2,
-  ClipboardCheck,
-  FileBarChart,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Settings,
-  ShieldCheck,
-  Stethoscope,
-  Users,
-  X,
-} from "lucide-react";
+import { Bell, Building2, ClipboardCheck, FileBarChart, LayoutDashboard, Menu, Settings, ShieldCheck, Stethoscope, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -75,7 +65,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
 
-        const data = await getDashboardData("2026");
+        const data = await getDashboardData(getFiscalYear());
 
         if (active) {
           setDashboardData(data);
@@ -120,103 +110,21 @@ export default function Home() {
         />
       )}
 
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-[#0b1f3f] text-white transition-transform duration-200 lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
-          <div>
-            <div className="text-xl font-bold tracking-wide">COMPASSION</div>
-            <div className="mt-1 text-xs text-white/60">Admin Portal</div>
-          </div>
-
-          <button
-            aria-label="Close menu"
-            className="rounded-lg p-2 hover:bg-white/10 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="flex-1 space-y-1 px-3 py-5">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <button
-                key={item.label}
-                onClick={() =>
-                  item.label === "Reports"
-                    ? router.push("/reports")
-                    : item.label === "Settings"
-                      ? router.push("/settings")
-                      : item.label === "Providers"
-                        ? router.push("/providers")
-                        : item.label === "Facilities"
-                          ? router.push("/facilities")
-                        : undefined
-                }
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition ${
-                  item.active
-                    ? "bg-[#0054a6] text-white"
-                    : "text-white/75 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <Icon size={19} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="border-t border-white/10 p-3">
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-white/75 hover:bg-white/10 hover:text-white">
-            <LogOut size={19} />
-            <span>Sign out</span>
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar />
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-[#e0e4e8] bg-white px-4 shadow-sm sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <button
-              aria-label="Open menu"
-              className="rounded-lg p-2 text-[#0b1f3f] hover:bg-[#f5f7fa] lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu size={22} />
-            </button>
-
-            <div>
-              <h1 className="text-lg font-semibold text-[#0b1f3f]">
-                Admin Dashboard
-              </h1>
-              <p className="hidden text-sm text-[#5c6672] sm:block">
-                Compassion healthcare administration
-              </p>
-            </div>
-          </div>
-
+        <main className="relative mx-auto max-w-7xl px-6 py-8">
           <button
             aria-label="Notifications"
-            className="relative rounded-lg p-2.5 text-[#5c6672] hover:bg-[#f5f7fa]"
+            className="absolute right-6 top-6 rounded-lg p-2.5 text-[#5c6672] hover:bg-white"
           >
             <Bell size={21} />
           </button>
-        </header>
-
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <p className="text-sm font-medium text-[#0054a6]">
-              System Overview
-            </p>
-            <h2 className="mt-1 text-2xl font-bold text-[#0b1f3f] sm:text-3xl">
-              Welcome to Compassion
-            </h2>
-            <p className="mt-2 text-sm text-[#5c6672]">
+            <h1 className="text-2xl font-semibold text-[#0b1f3f]">
+              Welcome to the Admin Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-[#5c6672]">
               Monitor facilities, providers, beneficiaries, screenings and
               reporting from one place.
             </p>
@@ -265,19 +173,131 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-[#0b1f3f]">
                 Recent Activity
               </h3>
-              <p className="mt-2 text-sm text-[#5c6672]">
-                Dashboard data is now connected to the Compassion API.
+              <p className="mt-1 text-sm text-[#5c6672]">
+                Latest activity across the platform.
               </p>
+
+              <div className="mt-5 space-y-4">
+                {dashboardData
+                  ? [
+                  ...dashboardData.screenings.map((screening) => ({
+                    type: "Screening submitted",
+                    detail: screening.beneficiary_id,
+                    date: screening.submitted_at,
+                  })),
+                  ...dashboardData!.providers.map((provider) => ({
+                    type: "Provider registered",
+                    detail: provider.name,
+                    date: provider.created_at,
+                  })),
+                  ...dashboardData!.beneficiaries.map((beneficiary) => ({
+                    type: "Beneficiary registered",
+                    detail: beneficiary.beneficiary_id,
+                    date: beneficiary.created_at ?? beneficiary.last_updated_at ?? "",
+                  })),
+                  ...dashboardData!.facilities.map((facility) => ({
+                    type: "Facility registered",
+                    detail: facility.name,
+                    date: facility.created_at,
+                  })),
+                ]
+                  .filter((activity) => activity.date)
+                  .sort(
+                    (a, b) =>
+                      new Date(b.date).getTime() - new Date(a.date).getTime(),
+                  )
+                  .slice(0, 4)
+                  .map((activity, index) => (
+                    <div
+                      key={`${activity.type}-${activity.detail}-${index}`}
+                      className="flex items-start justify-between gap-4 border-b border-[#eef1f4] pb-3 last:border-b-0 last:pb-0"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-[#0b1f3f]">
+                          {activity.type}
+                        </p>
+                        <p className="mt-1 text-xs text-[#5c6672]">
+                          {activity.detail}
+                        </p>
+                      </div>
+                      <p className="shrink-0 text-xs text-[#7a8490]">
+                        {new Date(activity.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))
+                  : loading
+                    ? <p className="text-sm text-[#5c6672]">Loading recent activity...</p>
+                    : <p className="text-sm text-[#5c6672]">No recent activity.</p>}
+              </div>
             </div>
 
             <div className="rounded-xl border border-[#e0e4e8] bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-[#0b1f3f]">
-                Reporting
-              </h3>
-              <p className="mt-2 text-sm text-[#5c6672]">
-                Fiscal-year reporting is connected to the existing FastAPI
-                reporting engine.
-              </p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#0b1f3f]">
+                    Reporting
+                  </h3>
+                  <p className="mt-1 text-sm text-[#5c6672]">
+                    Current fiscal-year reporting summary.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => router.push("/reports")}
+                  className="text-sm font-medium text-[#0054a6] hover:underline"
+                >
+                  View report
+                </button>
+              </div>
+
+              {dashboardData && (
+                <div className="mt-5 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-[#7a8490]">
+                      Fiscal Year
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#0b1f3f]">
+                      {dashboardData.fiscalReport.fiscal_year}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-[#7a8490]">
+                      Registered
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#0b1f3f]">
+                      {Object.values(dashboardData.fiscalReport.report_matrix).reduce(
+                        (total, cohort) =>
+                          total + cohort.number_of_registered_participants,
+                        0,
+                      )}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-[#7a8490]">
+                      Screened
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#0b1f3f]">
+                      {getTotalScreenings(dashboardData.fiscalReport)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-[#7a8490]">
+                      Referred
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#0b1f3f]">
+                      {Object.values(dashboardData.fiscalReport.report_matrix).reduce(
+                        (total, cohort) =>
+                          total + cohort.referred_for_further_treatment,
+                        0,
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         </main>

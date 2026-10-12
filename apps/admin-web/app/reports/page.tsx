@@ -1,8 +1,11 @@
 "use client";
 
+import { getFiscalYear } from "@/lib/utils/fiscal_year";
+
 import AdminAuthGuard from "@/components/admin_auth_guard";
+import AdminSidebar from "@/components/admin_sidebar";
 import { FiscalReport, downloadFiscalReport, getFiscalReport } from "@/lib/api/admin_api";
-import { AlertCircle, ArrowLeft, Download } from "lucide-react";
+import { AlertCircle, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -82,7 +85,7 @@ export default function ReportsPage() {
         setLoading(true);
         setError(null);
 
-        const data = await getFiscalReport("2026");
+        const data = await getFiscalReport(getFiscalYear());
 
         if (active) {
           setReport(data);
@@ -114,7 +117,7 @@ export default function ReportsPage() {
       setExporting(format);
       setError(null);
 
-      const fiscalYear = report?.fiscal_year ?? "2026";
+      const fiscalYear = report?.fiscal_year ?? getFiscalYear();
       const blob = await downloadFiscalReport(fiscalYear, format);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -138,28 +141,16 @@ export default function ReportsPage() {
 
   return (
     <AdminAuthGuard>
-      <main className="min-h-screen bg-[#f5f7fa] p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="mb-5 inline-flex items-center gap-2 rounded-lg border border-[#e0e4e8] bg-white px-4 py-2.5 text-sm font-medium text-[#0b1f3f] shadow-sm transition hover:bg-[#f5f7fa]"
-            >
-              <ArrowLeft size={18} />
-              Back to Dashboard
-            </button>
-
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#0054a6]">
-              Health Screening Summary
-            </p>
-
-            <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-[#0b1f3f]">
+      <AdminSidebar />
+      <div className="lg:pl-64">
+      <main className="min-h-screen bg-[#f5f7fa]">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="text-2xl font-semibold text-[#0b1f3f]">
                   Fiscal-Year Report
                 </h1>
-                <p className="mt-2 text-[#5c6672]">
+                <p className="mt-1 text-sm text-[#5c6672]">
                   Programme screening summary by participant cohort.
                 </p>
               </div>
@@ -170,24 +161,21 @@ export default function ReportsPage() {
                     Fiscal Year
                   </p>
                   <p className="mt-1 text-xl font-bold text-[#0b1f3f]">
-                    {report?.fiscal_year ?? "2026"}
+                    {report?.fiscal_year ?? getFiscalYear()}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleExport("pdf")}
-                    disabled={exporting !== null}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#0054a6] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#004687] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <Download size={17} />
-                    {exporting === "pdf" ? "Exporting..." : "Export PDF"}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleExport("pdf")}
+                  disabled={exporting !== null}
+                  className="flex items-center justify-center gap-2 rounded-lg bg-[#0054a6] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#00498f] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Download size={17} />
+                  {exporting === "pdf" ? "Exporting..." : "Export PDF"}
+                </button>
               </div>
             </div>
-          </div>
 
           {loading && (
             <div className="rounded-2xl border border-[#e0e4e8] bg-white p-8 text-center text-sm text-[#5c6672] shadow-sm">
@@ -491,6 +479,7 @@ export default function ReportsPage() {
           )}
         </div>
       </main>
+      </div>
     </AdminAuthGuard>
   );
 }

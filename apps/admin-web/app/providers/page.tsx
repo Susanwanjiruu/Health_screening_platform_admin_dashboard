@@ -1,8 +1,9 @@
 "use client";
 
 import AdminAuthGuard from "@/components/admin_auth_guard";
+import AdminSidebar from "@/components/admin_sidebar";
 import { AdminUser, Facility, createProvider, getAdminUsers, getFacilities, setProviderLeader, toggleProviderStatus, updateProvider } from "@/lib/api/admin_api";
-import { AlertCircle, ArrowLeft, Ban, Building2, MoreHorizontal, Plus, ShieldCheck, Stethoscope, UserCheck, X } from "lucide-react";
+import { AlertCircle, Ban, Building2, MoreHorizontal, Plus, ShieldCheck, Stethoscope, UserCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -96,28 +97,33 @@ export default function ProvidersPage() {
 
   return (
     <AdminAuthGuard>
-      <main className="min-h-screen bg-[#f5f7fa] p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="mb-6 inline-flex items-center gap-2 rounded-lg border border-[#e0e4e8] bg-white px-4 py-2.5 text-sm font-medium text-[#0b1f3f] shadow-sm transition hover:bg-[#f5f7fa]"
-          >
-            <ArrowLeft size={18} />
-            Back to Dashboard
-          </button>
+      <AdminSidebar />
+      <div className="lg:pl-64">
+      <main className="min-h-screen bg-[#f5f7fa]">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="text-2xl font-semibold text-[#0b1f3f]">
+                Providers
+              </h1>
+              <p className="mt-1 text-sm text-[#5c6672]">
+                View provider accounts, facility assignments, leadership status,
+                and account status.
+              </p>
+            </div>
 
-          <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#0054a6]">
-              Provider Management
-            </p>
-            <h1 className="mt-2 text-3xl font-bold text-[#0b1f3f]">
-              Providers
-            </h1>
-            <p className="mt-2 text-[#5c6672]">
-              View provider accounts, facility assignments, leadership status,
-              and account status.
-            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreateForm(true);
+                setCreateError(null);
+                setCreateSuccess(null);
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0054a6] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#004687]"
+            >
+              <Plus size={18} />
+              Create Provider
+            </button>
           </div>
 
           {showCreateForm && (
@@ -341,21 +347,6 @@ export default function ProvidersPage() {
               </div>
             </div>
           )}
-
-          <div className="mb-6 flex justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                setShowCreateForm(true);
-                setCreateError(null);
-                setCreateSuccess(null);
-              }}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#0054a6] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#004687]"
-            >
-              <Plus size={18} />
-              Create Provider
-            </button>
-          </div>
 
           <section className="mb-6 grid gap-5 sm:grid-cols-3">
             <div className="rounded-xl border border-[#e0e4e8] bg-white p-5 shadow-sm">
@@ -920,6 +911,7 @@ export default function ProvidersPage() {
         )}
 
       </main>
+      </div>
     </AdminAuthGuard>
   );
 }

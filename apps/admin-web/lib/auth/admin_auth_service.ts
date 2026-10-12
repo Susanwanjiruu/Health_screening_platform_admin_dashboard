@@ -92,3 +92,35 @@ export async function resetPassword(
     }),
   });
 }
+
+export async function requestPasswordChangeOtp(
+  currentPassword: string,
+  newPassword: string,
+  token: string,
+): Promise<{ message: string }> {
+  return apiRequest("/auth/change-password-request", {
+    method: "POST",
+    token,
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+  });
+}
+
+export async function changeAdminPassword(
+  currentPassword: string,
+  newPassword: string,
+  otpCode: string,
+  token: string,
+): Promise<{ message: string }> {
+  return apiRequest("/auth/change-password", {
+    method: "POST",
+    token,
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+      otp_code: otpCode,
+    }),
+  });
+}

@@ -49,6 +49,8 @@ export type Screening = {
   bmi_computed_malnutrition_status?: string | null;
   requires_referral_followup: boolean;
   examiner_name?: string | null;
+  examiner_qualification?: string | null;
+  examiner_telephone?: string | null;
   submitted_at: string;
 };
 
@@ -197,8 +199,48 @@ export async function getFacilities(): Promise<Facility[]> {
   });
 }
 
+export async function createBeneficiary(payload: {
+  beneficiary_id: string;
+  first_name: string;
+  last_name: string;
+  birthdate?: string | null;
+  gender?: string | null;
+  cohort_type: string;
+  consent_on_file: boolean;
+}): Promise<Beneficiary> {
+  return apiRequest<Beneficiary>("/beneficiary", {
+    method: "POST",
+    token: requireAdminToken(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateBeneficiary(
+  beneficiaryId: string,
+  payload: {
+    first_name?: string;
+    last_name?: string;
+    birthdate?: string | null;
+    gender?: string | null;
+    consent_on_file?: boolean;
+  },
+): Promise<Beneficiary> {
+  return apiRequest<Beneficiary>(`/beneficiary/${beneficiaryId}`, {
+    method: "PUT",
+    token: requireAdminToken(),
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function getBeneficiaries(): Promise<Beneficiary[]> {
   return apiRequest<Beneficiary[]>("/beneficiary", {
+    method: "GET",
+    token: requireAdminToken(),
+  });
+}
+
+export async function getScreenings(): Promise<Screening[]> {
+  return apiRequest<Screening[]>("/screening", {
     method: "GET",
     token: requireAdminToken(),
   });
